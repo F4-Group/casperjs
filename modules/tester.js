@@ -1910,6 +1910,12 @@ function TestCaseResult(options) {
 }
 exports.TestCaseResult = TestCaseResult;
 
+var stepIndex = 0;
+function getStepPrefix(){
+    stepIndex ++;
+    return stepIndex + "- ";
+}
+
 /**
  * Adds a failure record and its execution time.
  *
@@ -1922,6 +1928,7 @@ TestCaseResult.prototype.addFailure = function addFailure(failure, time, timesta
     failure.suite = this.name;
     failure.time = time;
     failure.timestamp = timestamp;
+    failure.stepPrefix = getStepPrefix();
     this.failures.push(failure);
 };
 
@@ -1948,6 +1955,7 @@ TestCaseResult.prototype.addSuccess = function addSuccess(success, time, timesta
     success.suite = this.name;
     success.time = time;
     success.timestamp = timestamp;
+    success.stepPrefix = getStepPrefix();
     this.passes.push(success);
 };
 
@@ -1963,6 +1971,7 @@ TestCaseResult.prototype.addSkip = function addSkip(skipped, time, timestamp) {
     skipped.suite = this.name;
     skipped.time = time;
     skipped.timestamp = timestamp;
+    skipped.stepPrefix = getStepPrefix();
     this.skips.push(skipped);
 };
 
