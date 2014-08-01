@@ -110,7 +110,8 @@ XUnitExporter.prototype.getXML = function getXML() {
             var testCase = utils.node('testcase', {
                 name: success.message || success.standard,
                 classname: generateClassName(success.file),
-                time: utils.ms2seconds(~~success.time)
+                time: utils.ms2seconds(~~success.time),
+                timestamp: success.timestamp.toISOString()
             });
             suiteNode.appendChild(testCase);
         });
@@ -119,7 +120,8 @@ XUnitExporter.prototype.getXML = function getXML() {
             var testCase = utils.node('testcase', {
                 name: failure.message || failure.standard,
                 classname: generateClassName(failure.file),
-                time: utils.ms2seconds(~~failure.time)
+                time: utils.ms2seconds(~~failure.time),
+                timestamp: failure.timestamp.toISOString()
             });
             var failureNode = utils.node('failure', {
                 type: failure.type || "failure"

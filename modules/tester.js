@@ -125,22 +125,26 @@ var Tester = function Tester(casper, options) {
     this.suiteResults = new TestSuiteResult();
 
     this.on('success', function onSuccess(success) {
-        var timeElapsed = new Date() - this.currentTestStartTime;
-        this.currentSuite.addSuccess(success, timeElapsed - this.lastAssertTime);
+        var now = new Date();
+        var timeElapsed = now - this.currentTestStartTime;
+        this.currentSuite.addSuccess(success, timeElapsed - this.lastAssertTime, now);
         this.lastAssertTime = timeElapsed;
     });
 
     this.on('skipped', function onSkipped(skipped) {
-        var timeElapsed = new Date() - this.currentTestStartTime;
-        this.currentSuite.addSkip(skipped, timeElapsed - this.lastAssertTime);
+        var now = new Date();
+        var timeElapsed = now - this.currentTestStartTime;
+        this.currentSuite.addSkip(skipped, timeElapsed - this.lastAssertTime, now);
         this.lastAssertTime = timeElapsed;
     });
 
     this.on('fail', function onFail(failure) {
         // export
-        var valueKeys = Object.keys(failure.values),
-            timeElapsed = new Date() - this.currentTestStartTime;
-        this.currentSuite.addFailure(failure, timeElapsed - this.lastAssertTime);
+
+        var now = new Date();
+        var timeElapsed = now - this.currentTestStartTime;
+        var valueKeys = Object.keys(failure.values);
+        this.currentSuite.addFailure(failure, timeElapsed - this.lastAssertTime, now);
         this.lastAssertTime = timeElapsed;
         // special printing
         if (failure.type) {
@@ -1911,11 +1915,13 @@ exports.TestCaseResult = TestCaseResult;
  *
  * @param Object  failure
  * @param Number  time
+ * @param Date    timestamp
  */
-TestCaseResult.prototype.addFailure = function addFailure(failure, time) {
+TestCaseResult.prototype.addFailure = function addFailure(failure, time, timestamp) {
     "use strict";
     failure.suite = this.name;
     failure.time = time;
+    failure.timestamp = timestamp;
     this.failures.push(failure);
 };
 
@@ -1935,11 +1941,13 @@ TestCaseResult.prototype.addError = function addFailure(error) {
  *
  * @param Object  success
  * @param Number  time
+ * @param Date    timestamp
  */
-TestCaseResult.prototype.addSuccess = function addSuccess(success, time) {
+TestCaseResult.prototype.addSuccess = function addSuccess(success, time, timestamp) {
     "use strict";
     success.suite = this.name;
     success.time = time;
+    success.timestamp = timestamp;
     this.passes.push(success);
 };
 
@@ -1948,11 +1956,13 @@ TestCaseResult.prototype.addSuccess = function addSuccess(success, time) {
  *
  * @param Object  success
  * @param Number  time
+ * @param Date    timestamp
  */
-TestCaseResult.prototype.addSkip = function addSkip(skipped, time) {
+TestCaseResult.prototype.addSkip = function addSkip(skipped, time, timestamp) {
     "use strict";
     skipped.suite = this.name;
     skipped.time = time;
+    skipped.timestamp = timestamp;
     this.skips.push(skipped);
 };
 
