@@ -230,7 +230,7 @@
             var text = '', elements = this.findAll(selector);
             if (elements && elements.length) {
                 Array.prototype.forEach.call(elements, function _forEach(element) {
-                    text += element.textContent || element.innerText;
+                    text += element.textContent || element.innerText || element.value;
                 });
             }
             return text;
@@ -273,6 +273,12 @@
                 css: function(inputSelector, formSelector) {
                     return this.findAll(inputSelector, form);
                 },
+                labels: function(labelText, formSelector, value) {
+                    var label = this.findOne({type: "xpath", path: '//label[text()="' + labelText + '"]'}, form);
+                    if(label && label.htmlFor) {
+                        return this.findAll('#' + label.htmlFor, form);
+                    }
+                },
                 names: function(elementName, formSelector) {
                     return this.findAll('[name="' + elementName + '"]', form);
                 },
@@ -295,9 +301,15 @@
                     out.fields[fieldSelector] = this.setField(field, value);
                 } catch (err) {
                     if (err.name === "FileUploadError") {
+                        var selector;
+                        if(findType === "labels") {
+                          selector = '#' + field[0].id;
+                        } else {
+                          selector = fieldSelector;
+                        }
                         out.files.push({
                             type: findType,
-                            selector: fieldSelector,
+                            selector: selector,
                             path: err.path
                         });
                     } else if (err.name === "FieldNotFound") {
@@ -851,9 +863,13 @@
                             };
                         case "radio":
                             if (fields) {
-                                Array.prototype.forEach.call(fields, function _forEach(e) {
-                                    e.checked = (e.value === value);
-                                });
+                                if (fields.length > 1) {
+                                    Array.prototype.forEach.call(fields, function _forEach(e) {
+                                        e.checked = (e.value === value);
+                                    });
+                                } else {
+                                    field.checked = value ? true : false;
+                                }
                             } else {
                                 out = 'Provided radio elements are empty';
                             }

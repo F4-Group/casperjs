@@ -87,30 +87,37 @@ CasperError.prototype = Object.getPrototypeOf(new Error());
         return;
     }
 
+    function __exit(statusCode){
+        setTimeout(function() { phantom.exit(statusCode); }, 0);
+    }
+
     function __die(message) {
         if (message) {
             console.error(message);
         }
-        phantom.exit(1);
+        __exit(1);
     }
 
     function __terminate(message) {
         if (message) {
             console.log(message);
         }
-        phantom.exit();
+        __exit();
     }
 
-    (function(version) {
+    (function (version) {
         // required version check
-        if (version.major !== 1) {
-            return __die('CasperJS needs PhantomJS v1.x');
-        } if (version.minor < 8) {
-            return __die('CasperJS needs at least PhantomJS v1.8 or later.');
+        if (version.major === 1) {
+            if (version.minor < 8) {
+                return __die('CasperJS needs at least PhantomJS v1.8 or later.');
+            }
+            if (version.minor === 8 && version.patch < 1) {
+                return __die('CasperJS needs at least PhantomJS v1.8.1 or later.');
+            }
+        } else if (version.major === 2) {
+            console.log("Warning PhantomJS v2.0 not yet released. There will not be any official support for any bugs until stable version is released!");
         }
-        if (version.minor === 8 && version.patch < 1) {
-            return __die('CasperJS needs at least PhantomJS v1.8.1 or later.');
-        }
+        else return __die('CasperJS needs PhantomJS v1.x or v2.x');
     })(phantom.version);
 
     // Hooks in default phantomjs error handler

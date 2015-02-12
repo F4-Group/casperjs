@@ -179,7 +179,9 @@ var Casper = function Casper(options) {
             throw new CasperError('casper.test property is only available using the `casperjs test` command');
         }
         if (!utils.isObject(this._test)) {
-            this._test = tester.create(this);
+            this._test = tester.create(this, {
+                concise: this.cli.get('concise')
+            });
         }
         return this._test;
     });
@@ -568,7 +570,7 @@ Casper.prototype.die = function die(message, status) {
     this.result.status = "error";
     this.result.time = new Date().getTime() - this.startTime;
     if (!utils.isString(message) || !message.length) {
-        message = "Suite explicitely interrupted without any message given.";
+        message = "Suite explicitly interrupted without any message given.";
     }
     this.log(message, "error");
     this.echo(message, "ERROR");
@@ -756,7 +758,7 @@ Casper.prototype.exists = function exists(selector) {
 Casper.prototype.exit = function exit(status) {
     "use strict";
     this.emit('exit', status);
-    phantom.exit(status);
+    setTimeout(function() { phantom.exit(status); }, 0);
 };
 
 /**
@@ -821,7 +823,7 @@ Casper.prototype.fillForm = function fillForm(selector, vals, options) {
                 var fileFieldSelector;
                 if (file.type === "names") {
                     fileFieldSelector = [selector, 'input[name="' + file.selector + '"]'].join(' ');
-                } else if (file.type === "css") {
+                } else if (file.type === "css" || file.type === "labels") {
                     fileFieldSelector = [selector, file.selector].join(' ');
                 }
                 this.page.uploadFile(fileFieldSelector, file.path);
@@ -863,6 +865,21 @@ Casper.prototype.fillNames = function fillNames(formSelector, vals, submit) {
     return this.fillForm(formSelector, vals, {
         submit: submit,
         selectorType: 'names'
+    });
+};
+
+/**
+ * Fills a form with provided field values using associated label text.
+ *
+ * @param  String  formSelector  A DOM CSS3/XPath selector to the target form to fill
+ * @param  Object  vals          Field values
+ * @param  Boolean submit        Submit the form?
+ */
+Casper.prototype.fillLabels = function fillLabels(formSelector, vals, submit) {
+    "use strict";
+    return this.fillForm(formSelector, vals, {
+        submit: submit,
+        selectorType: 'labels'
     });
 };
 
@@ -1473,7 +1490,7 @@ Casper.prototype.resourceExists = function resourceExists(test) {
     switch (utils.betterTypeOf(test)) {
         case "string":
             testFn = function _testResourceExists_String(res) {
-                return res.url.search(test) !== -1 && res.status !== 404;
+                return res.url.indexOf(test) !== -1 && res.status !== 404;
             };
             break;
         case "regexp":
